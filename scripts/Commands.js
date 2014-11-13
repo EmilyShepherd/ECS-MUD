@@ -841,8 +841,15 @@ var commands = {
 
 			controller.findPotentialMUDObject
 			(
-				conn, objName, function(obj)
+				conn, objName,
+				function(obj)
 				{
+					if (obj.ownerId != player.id)
+					{
+						controller.sendMessage(conn, strings.permissionDenied);
+						return;
+					}
+					
 					controller.findPotentialMUDObject
 					(
 						conn, keyName, function(key)
