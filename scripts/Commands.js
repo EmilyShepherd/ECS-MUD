@@ -370,6 +370,58 @@ var commands = {
 			});
 		}
 	}),
+	//Checkout player inventory
+	"inventory": CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 0)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+			player.getContents().success(function(contents) {
+				if (contents) {
+					if (contents.length>0) {
+						controller.sendMessage(conn, strings.youAreCarrying);
+						for (var i=0; i<contents.length; i++) {
+							controller.sendMessage(conn, contents[i].name);
+						}
+					} else {
+						controller.sendMessage(conn, strings.carryingNothing);
+					}
+				} 
+			});
+		}
+	}),
+	//Create an object
+	"@create": CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+
+			//create the actual object
+			controller.createMUDObject(conn,
+			{
+				name: argsArr[0],
+				type:'THING',
+				locationId: player.id,
+				targetId: player.targetId,
+				ownerId: player.id
+			}, function(obj) {
+				if (obj) {
+					controller.sendMessage(conn, strings.created);
+				}
+			});
+		}
+	}),	
 	//set the description of something
 	"@describe": PropertyHandler.extend({
 		prop: 'description'
