@@ -496,12 +496,13 @@ var commands = {
 };
 
 //command aliases
-commands.goto = commands.go;
-commands.move = commands.go;
-commands.cr   = commands.create;
-commands.co   = commands.connect;
-commands.read = commands.look;
-commands.take = commands.get;
+commands.goto  = commands.go;
+commands.move  = commands.go;
+commands.cr    = commands.create;
+commands.co    = commands.connect;
+commands.read  = commands.look;
+commands.take  = commands.get;
+commands.throw = commands.drop;
 
 //The commands object is exported publicly by the module
 module.exports = commands;
