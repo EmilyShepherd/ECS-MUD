@@ -679,6 +679,34 @@ var commands = {
 		}
 	}),
 
+	// Unlinks an exit
+	"@unlink" : CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+
+			controller.findPotentialMUDObject(conn, argsArr[0], function(exit) {
+				if (exit.ownerId != player.id)
+				{
+					controller.sendMessage(conn, strings.permissionDenied);
+					return;
+				}
+
+				exit.targetId = null;
+				exit.save().success(function()
+				{
+					controller.sendMessage(conn, strings.unlinked);
+				});
+			}, false, false, 'EXIT', strings.ambigSet, strings.unlinkUnknown);
+		}
+	}),
+
 	//set the description of something
 	"@describe": PropertyHandler.extend({
 		prop: 'description'
