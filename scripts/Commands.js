@@ -142,6 +142,54 @@ var commands = {
 			controller.sendMessageRoomExcept(conn, strings.says, {name: player.name, message: message});
 		}
 	}),
+	//Whisper to another player
+	whisper: CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+
+			var index = argsArr[0].indexOf("=");
+			index = (index === -1) ? argsArr[0].length : index;
+			var targetName = argsArr[0].substring(0, index).trim();
+			var toPlayer   = controller.findActivePlayerByName(targetName);
+			var message    = argsArr[0].substring(index + 1).trim();
+
+			if (!message)
+			{
+				controller.sendMessage(conn, strings.unknownCommand);
+				return;
+			}
+			if (!toPlayer)
+			{
+				controller.sendMessage(conn, strings.playerNotFound);
+				return;
+			}
+
+			controller.sendMessage(conn, strings.youWhisper, {name: toPlayer.name, message: message});
+			controller.sendMessage(controller.findActiveConnectionByPlayer(toPlayer), strings.toWhisper, {name: player.name, message: message});
+
+			controller.applyToActivePlayers(function(otherconn, other) {
+				if (other.locationId === player.locationId && player !== other && other !== toPlayer) {
+					if (Math.random() <= 0.1)
+					{
+						controller.sendMessage(otherconn, strings.overheard, {fromName: player.name, toName: toPlayer.name, message: message});
+					}
+					else
+					{
+						controller.sendMessage(otherconn, strings.whisper, {fromName: player.name, toName: toPlayer.name});
+					}
+				}
+			});
+
+			
+		}
+	}),
 	//move the player somewhere
 	go: CommandHandler.extend({
 		nargs: 1,
