@@ -139,32 +139,33 @@ var commands = {
 		},
 		perform: function(conn, argsArr) {
 			var player   = controller.findActivePlayerByConnection(conn);
-			controller.loadMUDObject(conn, {name: argsArr[0], type:'THING'}, function(obj)
-			{
-				if (obj && obj.locationId == player.id)
+			controller.findPotentialMUDObject
+			(
+				conn, argsArr[0],
+				function(obj)
 				{
-					controller.sendMessage(conn, strings.alreadyHaveThat);
-				}
-				else if (!obj || obj.locationId != player.locationId)
-				{
-					controller.sendMessage(conn, strings.takeUnknown);
-				}
-				else
-				{
-					predicates.canDoIt(controller, player, obj, function(canDoIt)
+					if (obj.locationId == player.id)
 					{
-						if (canDoIt)
+						controller.sendMessage(conn, strings.alreadyHaveThat);
+					}
+					else
+					{
+						predicates.canDoIt(controller, player, obj, function(canDoIt)
 						{
-							obj.locationId = player.id;
-							obj.save().success(function()
+							if (canDoIt)
 							{
-								controller.sendMessage(conn, strings.taken);
-							});
-						}
-					},
-					strings.cantTakeThat);
-				}
-			});
+								obj.locationId = player.id;
+								obj.save().success(function()
+								{
+									controller.sendMessage(conn, strings.taken);
+								});
+							}
+						},
+						strings.cantTakeThat);
+					}
+				},
+				false, false, 'THING', strings.ambigSet, strings.takeUnknown
+			);
 		}
 	}),
 	//Drops an item
@@ -764,6 +765,7 @@ var commands = {
 	"@set" : PropertyHandler.extend({
 		perform : function(conn, argsArr)
 		{
+			var player = controller.findActivePlayerByConnection(conn);
 			var index = argsArr[0].indexOf("=");
 			index = (index === -1) ? argsArr[0].length : index;
 			var object = argsArr[0].substring(0, index).trim();
