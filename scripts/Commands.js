@@ -155,11 +155,42 @@ var commands = {
 					{
 						if (canDoIt)
 						{
-							obj.setLocation(player.locationId);
-							controller.sendMessage(conn, strings.taken);
+							obj.locationId = player.id;
+							obj.save().success(function()
+							{
+								controller.sendMessage(conn, strings.taken);
+							});
 						}
 					},
 					strings.cantTakeThat);
+				}
+			});
+		}
+	}),
+	//Drops an item
+	drop: CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player   = controller.findActivePlayerByConnection(conn);
+			var item     = controller.loadMUDObject(conn, {name: argsArr[0], type: 'THING'}, function (obj)
+			{
+				if (!obj || obj.locationId != player.id)
+				{
+					controller.sendMessage(conn, strings.dontHave);
+				}
+				else
+				{
+					obj.locationId = player.locationId;
+					obj.save().success(function()
+					{
+						controller.sendMessage(conn, strings.dropped);
+					});
 				}
 			});
 		}
