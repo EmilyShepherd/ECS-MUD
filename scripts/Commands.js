@@ -301,6 +301,7 @@ commands.goto = commands.go;
 commands.move = commands.go;
 commands.cr = commands.create;
 commands.co = commands.connect;
+commands.read = commands.look;
 
 //The commands object is exported publicly by the module
 module.exports = commands;
