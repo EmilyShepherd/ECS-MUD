@@ -128,6 +128,33 @@ var commands = {
 			});
 		}
 	}),
+	//Whisper to another player
+	page: CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player   = controller.findActivePlayerByConnection(conn);
+			var toPlayer = controller.findActivePlayerByName(argsArr[0]);
+
+			if (!toPlayer)
+			{
+				controller.sendMessage(conn, strings.playerNotFound);
+				return;
+			}
+
+			controller.loadMUDObject(conn, {id: player.locationId}, function(location) {
+				var otherconn = controller.findActiveConnectionByPlayer(toPlayer);
+
+				controller.sendMessage(otherconn, strings.page, {name: player.name, location: location.name});
+				controller.sendMessage(conn, strings.pageOK);
+			});
+		}
+	}),
 	//Speak to other players
 	say: CommandHandler.extend({
 		nargs: 1,
