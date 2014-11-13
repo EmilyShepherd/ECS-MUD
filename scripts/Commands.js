@@ -518,6 +518,26 @@ var commands = {
 			});
 		}
 	}),	
+	// Digs a new room
+	"@dig" : CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+			controller.createMUDObject(conn, {name: argsArr[0], ownerId: player.id, type: 'ROOM'}, function(room)
+			{
+				if (room)
+				{
+					controller.sendMessage(conn, strings.roomCreated, room);
+				}
+			});
+		}
+	}),
 	//set the description of something
 	"@describe": PropertyHandler.extend({
 		prop: 'description'
