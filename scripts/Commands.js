@@ -437,6 +437,35 @@ var commands = {
 			});
 		}
 	}),
+	//Examines an object... kind of like looking at it, but better
+	examine: CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+			controller.loadMUDObject(conn, {name: argsArr[0]}, function(obj)
+			{
+				// Check if it exists, and is in the same room / inventory as the player
+				if (!obj || (obj.locationId != player.id && obj.locationId != player.locationId))
+				{
+					controller.sendMessage(conn, strings.examineUnknown);
+				}
+				else if (obj.ownerId != player.id)
+				{
+					controller.sendMessage(conn, strings.permissionDenied);
+				}
+				else
+				{
+					controller.sendMessage(conn, strings.examine, obj);
+				}
+			});
+		}
+	}),
 	//Checkout player inventory
 	"inventory": CommandHandler.extend({
 		nargs: 1,
