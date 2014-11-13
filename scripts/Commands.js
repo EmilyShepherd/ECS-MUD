@@ -559,7 +559,38 @@ var commands = {
 		prop: 'othersSuccessMessage'
 	}),
 
-	// LLocks the object
+	// Tries to find the given thing
+	"@find" : CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+			var name   = db.sequelize.getQueryInterface().escape('%' + argsArr[0].toLowerCase() +'%');
+			controller.loadMUDObjects
+			(
+				conn,
+				db.Sequelize.and
+				(
+					"lower(name) LIKE " + name,
+					{ownerId: player.id}
+				),
+				function (matches)
+				{
+					for (var i = matches.length - 1; i >= 0; i--)
+					{
+						controller.sendMessage(conn, "{{name}} (#{{id}})", matches[i]);
+					};
+				}
+			);
+		}
+	}),
+
+	// Locks the object
 	"@lock" : CommandHandler.extend({
 		nargs: 1,
 		validate: function(conn, argsArr, cb) {
@@ -597,7 +628,7 @@ var commands = {
 								{
 									obj = obj[0];
 									key = key[0];
-									
+
 									obj.keyId = key.id;
 									obj.save().success(function()
 									{
