@@ -538,6 +538,48 @@ var commands = {
 			});
 		}
 	}),
+	//Opens a new entrance
+	"@open" : CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+			controller.loadMUDObject(conn, {id: player.locationId}, function(loc)
+			{
+				if (!loc)
+				{
+					// We'd be having internal issues if this occurs, as the player would
+					// be in a room that doesn't exist! :/
+				}
+				else if (loc.ownerId != player.id)
+				{
+					controller.sendMessage(conn, strings.permissionDenied);
+				}
+				else
+				{
+					controller.createMUDObject
+					(
+						conn,
+						{
+							type: 'EXIT',
+							locationId: loc.id,
+							name: argsArr[0]
+						},
+						function()
+						{
+							controller.sendMessage(conn, strings.opened);
+						}
+					);
+				}
+			});
+		}
+	}),
+
 	//set the description of something
 	"@describe": PropertyHandler.extend({
 		prop: 'description'
