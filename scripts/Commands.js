@@ -557,6 +557,42 @@ var commands = {
 	}),
 	"@osuccess":PropertyHandler.extend({
 		prop: 'othersSuccessMessage'
+	}),
+
+	// This changes your password
+	"@password" : CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+
+			var index = argsArr[0].indexOf("=");
+			index = (index === -1) ? argsArr[0].length : index;
+			var oldPass = argsArr[0].substring(0, index).trim();
+			var newPass = argsArr[0].substring(index + 1).trim();
+
+			if (!oldPass || !newPass)
+			{
+				controller.sendMessage(conn, strings.unknownCommand);
+				return;
+			}
+			if (oldPass != player.password)
+			{
+				controller.sendMessage(conn, strings.incorrectPassword);
+				return;
+			}
+
+			player.password = newPass;
+			player.save().success(function()
+			{
+				controller.sendMessage(conn, strings.changePasswordSuccess);
+			});
+		}
 	})
 };
 
