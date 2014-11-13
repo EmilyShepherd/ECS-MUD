@@ -1,5 +1,5 @@
 {
-  "name": "COMP3207-CW1-1415-<your-ecs-user-id>",
+  "name": "COMP3207-CW1-1415-ams2g11",
   "version": "0.0.0",
   "description": "Node MUD server",
   "main": "web.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/ECS-COMP3207-1415/<your-github-id>-CW1"
+    "url": "git://github.com/ECS-COMP3207-1415/ams2g11-CW1"
   },
   "author": "<your-name>",
   "license": "Southampton",
   "bugs": {
     "url": "https://github.com/ECS-COMP3207-1415/<your-github-id>-CW1/issues"
   },
-  "homepage": "https://github.com/ECS-COMP3207-1415/<your-github-id>-CW1",
+  "homepage": "https://github.com/ECS-COMP3207-1415/ams2g11-CW1",
   "dependencies": {
     "express": "^4.8.3",
     "jade": "^1.5.0",
