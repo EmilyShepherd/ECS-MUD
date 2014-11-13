@@ -493,6 +493,22 @@ var commands = {
 	"@describe": PropertyHandler.extend({
 		prop: 'description'
 	}),
+	//Sets the object's name
+	"@name": PropertyHandler.extend({
+		prop: 'name'
+	}),
+	"@ofail":PropertyHandler.extend({
+		prop: 'othersFailureMessage'
+	}),
+	"@failure":PropertyHandler.extend({
+		prop: 'failureMessage'
+	}),
+	"@success":PropertyHandler.extend({
+		prop: 'successMessage'
+	}),
+	"@osuccess":PropertyHandler.extend({
+		prop: 'othersSuccessMessage'
+	})
 };
 
 //command aliases
@@ -503,6 +519,7 @@ commands.co    = commands.connect;
 commands.read  = commands.look;
 commands.take  = commands.get;
 commands.throw = commands.drop;
+commands["@ofailure"] = commands["@ofail"];
 
 //The commands object is exported publicly by the module
 module.exports = commands;
