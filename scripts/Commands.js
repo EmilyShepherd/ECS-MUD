@@ -197,6 +197,11 @@ var commands = {
 				controller.sendMessage(conn, strings.playerNotFound);
 				return;
 			}
+			if (player.locationId != toPlayer.locationId)
+			{
+				controller.sendMessage(conn, strings.notInRoom);
+				return;
+			}
 
 			controller.sendMessage(conn, strings.youWhisper, {name: toPlayer.name, message: message});
 			controller.sendMessage(controller.findActiveConnectionByPlayer(toPlayer), strings.toWhisper, {name: player.name, message: message});
