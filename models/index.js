@@ -10,7 +10,7 @@ if (!global.hasOwnProperty('db')) {
   var sequelize = null;
 
   //edit to suit your heroku database
-  var dbUrl = process.env.HEROKU_POSTGRESQL_GREEN_URL;
+  var dbUrl = process.env.HEROKU_POSTGRESQL_PURPLE_URL;
   
   if (dbUrl) {
     //if the heroku database is set, it will be used
