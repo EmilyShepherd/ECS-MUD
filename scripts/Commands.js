@@ -517,6 +517,12 @@ var commands = {
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
 
+			if (!predicates.isNameValid(argsArr[0]))
+			{
+				controller.sendMessage(conn, strings.invalidName);
+				return;
+			}
+
 			//create the actual object
 			controller.createMUDObject
 			(
@@ -540,6 +546,13 @@ var commands = {
 	"@dig" : PropertyHandler.extend({
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
+
+			if (!predicates.isNameValid(argsArr[0]))
+			{
+				controller.sendMessage(conn, strings.invalidName);
+				return;
+			}
+
 			controller.createMUDObject
 			(
 				conn,
@@ -654,7 +667,7 @@ var commands = {
 						{
 							controller.sendMessage(conn, strings.notARoom);
 						}
-						else if (obj.type == 'EXIT' && room.ownerId != player.id && !room.canLink())
+						else if (obj.type == 'EXIT' && !predicates.isLinkable(obj, player))
 						{
 							controller.sendMessage(conn, strings.permissionDenied);
 						}
@@ -894,6 +907,10 @@ var commands = {
 			{
 				controller.sendMessage(conn, strings.incorrectPassword);
 				return;
+			}
+			if (!predicates.isPasswordValid(newPass))
+			{
+				controller.sendMessage(conn, strings.badPassword);
 			}
 
 			player.password = newPass;
