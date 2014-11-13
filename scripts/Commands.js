@@ -759,6 +759,49 @@ var commands = {
 		}
 	}),
 
+	"@set" : PropertyHandler.extend({
+		perform : function(conn, argsArr)
+		{
+			var index = argsArr[0].indexOf("=");
+			index = (index === -1) ? argsArr[0].length : index;
+			var object = argsArr[0].substring(0, index).trim();
+			var flag   = argsArr[0].substring(index + 1).trim();
+			var flags  =
+			{
+				"link_ok"   : global.db.MUDObject.FLAGS.link_ok,
+				"temple"    : global.db.MUDObject.FLAGS.temple,
+				"anti_lock" : global.db.MUDObject.FLAGS.anti_lock
+			};
+			
+
+			if (!object || !flag)
+			{
+				controller.sendMessage(conn, strings.unknownCommand);
+				return;
+			}
+
+			controller.findPotentialMUDObject(conn, object, function(obj)
+			{
+				if (flag.substring(0, 1) == "!")
+				{
+					flag = flag.substring(1);
+					obj.resetFlag(flags[flag]).success(function()
+					{
+						controller.sendMessage(conn, strings.reset, {property: flag});
+					});
+				}
+				else
+				{
+					obj.setFlag(flags[flag]).success(function()
+					{
+						controller.sendMessage(conn, strings.set, {property: flag});
+					});
+				}
+			}, true, true, undefined, strings.ambigSet, strings.setUnknown);
+			
+		}
+	}),
+
 	// Locks the object
 	"@lock" : CommandHandler.extend({
 		nargs: 1,
