@@ -549,6 +549,7 @@ commands.read  = commands.look;
 commands.take  = commands.get;
 commands.throw = commands.drop;
 commands["@ofailure"] = commands["@ofail"];
+commands["@fail"]     = commands["@failure"];
 
 //The commands object is exported publicly by the module
 module.exports = commands;
