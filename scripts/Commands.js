@@ -178,21 +178,40 @@ var commands = {
 		},
 		perform: function(conn, argsArr) {
 			var player   = controller.findActivePlayerByConnection(conn);
-			var item     = controller.loadMUDObject(conn, {name: argsArr[0], type: 'THING'}, function (obj)
-			{
-				if (!obj || obj.locationId != player.id)
+			controller.findPotentialMUDObject
+			(
+				conn,  argsArr[0],
+				function (obj)
 				{
-					controller.sendMessage(conn, strings.dontHave);
-				}
-				else
-				{
-					obj.locationId = player.locationId;
-					obj.save().success(function()
+					if (obj.locationId != player.id)
 					{
-						controller.sendMessage(conn, strings.dropped);
+						controller.sendMessage(conn, strings.dontHave);
+						return;
+					}
+
+					controller.loadMUDObject(conn, {id: player.locationId}, function(loc)
+					{
+						if (loc.isTemple())
+						{
+							obj.locationId = obj.targetId;
+						}
+						else if (loc.targetId)
+						{
+							obj.locationId = loc.targetId;
+						}
+						else
+						{
+							obj.locationId = player.locationId;
+						}
+
+						obj.save().success(function()
+						{
+							controller.sendMessage(conn, strings.dropped);
+						});
 					});
-				}
-			});
+				},
+				false, false, 'THING', strings.ambigSet, strings.dontHave
+			);
 		}
 	}),
 	//Whisper to another player
