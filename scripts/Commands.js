@@ -228,7 +228,7 @@ var commands = {
 			var player   = controller.findActivePlayerByConnection(conn);
 			var toPlayer = controller.findActivePlayerByName(argsArr[0]);
 
-			if (!toPlayer)
+			if (!toPlayer || toPlayer.id == player.id)
 			{
 				controller.sendMessage(conn, strings.playerNotFound);
 				return;
@@ -285,6 +285,11 @@ var commands = {
 				return;
 			}
 			if (player.locationId != toPlayer.locationId)
+			{
+				controller.sendMessage(conn, strings.notInRoom);
+				return;
+			}
+			if (player.id == toPlayer.id)
 			{
 				controller.sendMessage(conn, strings.notInRoom);
 				return;
