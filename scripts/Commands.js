@@ -580,6 +580,105 @@ var commands = {
 		}
 	}),
 
+	"@link" : CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+			
+			var index = argsArr[0].indexOf("=");
+			index = (index === -1) ? argsArr[0].length : index;
+			var objName    = argsArr[0].substring(0, index).trim();
+			var roomNumber = argsArr[0].substring(index + 1).trim();
+
+			if (!objName || !roomNumber)
+			{
+				controller.sendMessage(conn, strings.unknownCommand);
+				return;
+			}
+
+			controller.findPotentialMUDObjects
+			(
+				conn, objName,
+				function(obj)
+				{
+					// Gotta have an object
+					if (!obj[0])
+					{
+						controller.sendMessage(conn, strings.unknownCommand);
+						return;
+					}
+
+					obj = obj[0];
+
+					// If this is an exit, it must be unlinked
+					if (obj.type == 'EXIT' && obj.targetId)
+					{
+						controller.sendMessage(conn, strings.permissionDenied);
+						return;
+					}
+
+					// Pretty sure we can't modify things we don't own
+					if (obj.type != 'EXIT' && obj.ownerId != player.id)
+					{
+						controller.sendMessage(conn, strings.permissionDenied);
+						return;
+					}
+
+					// "home" can be used as a special case
+					if (roomNumber === 'home')
+					{
+						// If this is a room, set the temple flag instead, as that's easier
+						if (obj.type == 'ROOM')
+						{
+							this["@set"].perform(conn, [objName + "=temple"]);
+							return;
+						}
+						// Set this as your home
+						else
+						{
+							roomNumber = player.targetId;
+						}
+					}
+					// Make here work
+					else if (roomNumber == "here")
+					{
+						roomNumber = player.locationId;
+					}
+
+					controller.loadMUDObject(conn, {id: roomNumber, type: 'ROOM'}, function(room)
+					{
+						if (!room)
+						{
+							controller.sendMessage(conn, strings.notARoom);
+						}
+						else if (obj.type == 'EXIT' && room.ownerId != player.id && !room.canLink())
+						{
+							controller.sendMessage(conn, strings.permissionDenied);
+						}
+						else
+						{
+							obj.targetId = roomNumber;
+
+							if (obj.type == 'EXIT') obj.ownerId = player.id;
+
+							obj.save().success(function()
+							{
+								controller.sendMessage(conn, strings.linked);
+							});
+						}
+					})
+				},
+				true, true
+			);
+		}
+	}),
+
 	//set the description of something
 	"@describe": PropertyHandler.extend({
 		prop: 'description'
