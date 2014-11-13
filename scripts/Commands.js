@@ -814,6 +814,33 @@ var commands = {
 		}
 	}),
 
+	"@unlock" : PropertyHandler.extend({
+		perform : function(conn, argsArr)
+		{
+			controller.findPotentialMUDObject
+			(
+				conn, argsArr[0],
+				function(obj)
+				{
+					var player = controller.findActivePlayerByConnection(conn);
+					if (obj.ownerId != player.id)
+					{
+						controller.sendMessage(conn, strings.permissionDenied);
+					}
+					else
+					{
+						obj.keyId = null;
+						obj.save().success(function()
+						{
+							controller.sendMessage(conn, strings.unlocked);
+						});
+					}
+				},
+				true, true, undefined, strings.unlockUnknown, strings.unlockUnknown
+			);
+		}
+	}),
+
 	// This changes your password
 	"@password" : CommandHandler.extend({
 		nargs: 1,
