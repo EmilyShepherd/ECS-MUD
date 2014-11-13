@@ -826,11 +826,11 @@ var commands = {
 			var objName = argsArr[0].substring(0, index).trim();
 			var keyName = argsArr[0].substring(index + 1).trim();
 
-			controller.findPotentialMUDObjects
+			controller.findPotentialMUDObject
 			(
 				conn, objName, function(obj)
 				{
-					controller.findPotentialMUDObjects
+					controller.findPotentialMUDObject
 					(
 						conn, keyName, function(key)
 						{
