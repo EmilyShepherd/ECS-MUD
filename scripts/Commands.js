@@ -128,6 +128,42 @@ var commands = {
 			});
 		}
 	}),
+	//Pick up an object
+	get: CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player   = controller.findActivePlayerByConnection(conn);
+			controller.loadMUDObject(conn, {name: argsArr[0], type:'THING'}, function(obj)
+			{
+				if (obj && obj.locationId == player.id)
+				{
+					controller.sendMessage(conn, strings.alreadyHaveThat);
+				}
+				else if (!obj || obj.locationId != player.locationId)
+				{
+					controller.sendMessage(conn, strings.takeUnknown);
+				}
+				else
+				{
+					predicates.canDoIt(controller, player, obj, function(canDoIt)
+					{
+						if (canDoIt)
+						{
+							obj.setLocation(player.locationId);
+							controller.sendMessage(conn, strings.taken);
+						}
+					},
+					strings.cantTakeThat);
+				}
+			});
+		}
+	}),
 	//Whisper to another player
 	page: CommandHandler.extend({
 		nargs: 1,
@@ -431,9 +467,10 @@ var commands = {
 //command aliases
 commands.goto = commands.go;
 commands.move = commands.go;
-commands.cr = commands.create;
-commands.co = commands.connect;
+commands.cr   = commands.create;
+commands.co   = commands.connect;
 commands.read = commands.look;
+commands.take = commands.get;
 
 //The commands object is exported publicly by the module
 module.exports = commands;
