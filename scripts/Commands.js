@@ -559,6 +559,61 @@ var commands = {
 		prop: 'othersSuccessMessage'
 	}),
 
+	// LLocks the object
+	"@lock" : CommandHandler.extend({
+		nargs: 1,
+		validate: function(conn, argsArr, cb) {
+			if (argsArr.length == 1)
+				cb(conn, argsArr);
+			else
+				controller.sendMessage(conn, strings.unknownCommand);
+		},
+		perform: function(conn, argsArr) {
+			var player = controller.findActivePlayerByConnection(conn);
+			var index = argsArr[0].indexOf("=");
+			index = (index === -1) ? argsArr[0].length : index;
+			var objName = argsArr[0].substring(0, index).trim();
+			var keyName = argsArr[0].substring(index + 1).trim();
+
+			controller.findPotentialMUDObjects
+			(
+				conn, objName, function(obj)
+				{
+					if (!obj[0])
+					{
+						controller.sendMessage(conn, strings.lockUnknown);
+					}
+					else
+					{
+						controller.findPotentialMUDObjects
+						(
+							conn, keyName, function(key)
+							{
+								if (!key[0])
+								{
+									controller.sendMessage(conn, strings.keyUnknown);
+								}
+								else
+								{
+									obj = obj[0];
+									key = key[0];
+									
+									obj.keyId = key.id;
+									obj.save().success(function()
+									{
+										controller.sendMessage(conn, strings.locked);
+									});
+								}
+							},
+							true, true
+						);
+					}
+				},
+				true, true
+			);
+		}
+	}),
+
 	// This changes your password
 	"@password" : CommandHandler.extend({
 		nargs: 1,
