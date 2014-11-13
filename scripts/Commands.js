@@ -448,22 +448,23 @@ var commands = {
 		},
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
-			controller.loadMUDObject(conn, {name: argsArr[0]}, function(obj)
-			{
-				// Check if it exists, and is in the same room / inventory as the player
-				if (!obj || (obj.locationId != player.id && obj.locationId != player.locationId))
+			controller.findPotentialMUDObject
+			(
+				conn, argsArr[0],
+				function(obj)
 				{
-					controller.sendMessage(conn, strings.examineUnknown);
-				}
-				else if (obj.ownerId != player.id)
-				{
-					controller.sendMessage(conn, strings.permissionDenied);
-				}
-				else
-				{
-					controller.sendMessage(conn, strings.examine, obj);
-				}
-			});
+					// Check if it exists, and is in the same room / inventory as the player
+					if (obj.ownerId != player.id)
+					{
+						controller.sendMessage(conn, strings.permissionDenied);
+					}
+					else
+					{
+						controller.sendMessage(conn, strings.examine, obj);
+					}
+				},
+				true, true, undefined, strings.ambigSet, strings.examineUnknown
+			);
 		}
 	}),
 	//Checkout player inventory
@@ -492,61 +493,53 @@ var commands = {
 		}
 	}),
 	//Create an object
-	"@create": CommandHandler.extend({
-		nargs: 1,
-		validate: function(conn, argsArr, cb) {
-			if (argsArr.length == 1)
-				cb(conn, argsArr);
-			else
-				controller.sendMessage(conn, strings.unknownCommand);
-		},
+	"@create": PropertyHandler.extend({
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
 
 			//create the actual object
-			controller.createMUDObject(conn,
-			{
-				name: argsArr[0],
-				type:'THING',
-				locationId: player.id,
-				targetId: player.targetId,
-				ownerId: player.id
-			}, function(obj) {
-				if (obj) {
-					controller.sendMessage(conn, strings.created);
+			controller.createMUDObject
+			(
+				conn,
+				{
+					name: argsArr[0],
+					type:'THING',
+					locationId: player.id,
+					targetId: player.targetId,
+					ownerId: player.id
+				}, 
+				function(obj) {
+					if (obj) {
+						controller.sendMessage(conn, strings.created);
+					}
 				}
-			});
+			);
 		}
 	}),	
 	// Digs a new room
-	"@dig" : CommandHandler.extend({
-		nargs: 1,
-		validate: function(conn, argsArr, cb) {
-			if (argsArr.length == 1)
-				cb(conn, argsArr);
-			else
-				controller.sendMessage(conn, strings.unknownCommand);
-		},
+	"@dig" : PropertyHandler.extend({
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
-			controller.createMUDObject(conn, {name: argsArr[0], ownerId: player.id, type: 'ROOM'}, function(room)
-			{
-				if (room)
+			controller.createMUDObject
+			(
+				conn,
 				{
-					controller.sendMessage(conn, strings.roomCreated, room);
+					name: argsArr[0],
+					ownerId: player.id,
+					type: 'ROOM'
+				},
+				function(room)
+				{
+					if (room)
+					{
+						controller.sendMessage(conn, strings.roomCreated, room);
+					}
 				}
-			});
+			);
 		}
 	}),
 	//Opens a new entrance
-	"@open" : CommandHandler.extend({
-		nargs: 1,
-		validate: function(conn, argsArr, cb) {
-			if (argsArr.length == 1)
-				cb(conn, argsArr);
-			else
-				controller.sendMessage(conn, strings.unknownCommand);
-		},
+	"@open" : PropertyHandler.extend({
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
 			controller.loadMUDObject(conn, {id: player.locationId}, function(loc)
@@ -580,14 +573,7 @@ var commands = {
 		}
 	}),
 
-	"@link" : CommandHandler.extend({
-		nargs: 1,
-		validate: function(conn, argsArr, cb) {
-			if (argsArr.length == 1)
-				cb(conn, argsArr);
-			else
-				controller.sendMessage(conn, strings.unknownCommand);
-		},
+	"@link" : PropertyHandler.extend({
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
 			
@@ -602,20 +588,11 @@ var commands = {
 				return;
 			}
 
-			controller.findPotentialMUDObjects
+			controller.findPotentialMUDObject
 			(
 				conn, objName,
 				function(obj)
 				{
-					// Gotta have an object
-					if (!obj[0])
-					{
-						controller.sendMessage(conn, strings.unknownCommand);
-						return;
-					}
-
-					obj = obj[0];
-
 					// If this is an exit, it must be unlinked
 					if (obj.type == 'EXIT' && obj.targetId)
 					{
@@ -674,7 +651,7 @@ var commands = {
 						}
 					})
 				},
-				true, true
+				true, true, undefined, strings.ambigSet, strings.unknownCommand
 			);
 		}
 	}),
@@ -691,19 +668,25 @@ var commands = {
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
 
-			controller.findPotentialMUDObject(conn, argsArr[0], function(exit) {
-				if (exit.ownerId != player.id)
+			controller.findPotentialMUDObject
+			(
+				conn, argsArr[0],
+				function(exit)
 				{
-					controller.sendMessage(conn, strings.permissionDenied);
-					return;
-				}
+					if (exit.ownerId != player.id)
+					{
+						controller.sendMessage(conn, strings.permissionDenied);
+						return;
+					}
 
-				exit.targetId = null;
-				exit.save().success(function()
-				{
-					controller.sendMessage(conn, strings.unlinked);
-				});
-			}, false, false, 'EXIT', strings.ambigSet, strings.unlinkUnknown);
+					exit.targetId = null;
+					exit.save().success(function()
+					{
+						controller.sendMessage(conn, strings.unlinked);
+					});
+				},
+				false, false, 'EXIT', strings.ambigSet, strings.unlinkUnknown
+			);
 		}
 	}),
 
@@ -782,7 +765,11 @@ var commands = {
 
 			controller.findPotentialMUDObject(conn, object, function(obj)
 			{
-				if (flag.substring(0, 1) == "!")
+				if (obj.ownerId != player.id)
+				{
+					controller.sendMessage(conn, strings.permissionDenied);
+				}
+				else if (flag.substring(0, 1) == "!")
 				{
 					flag = flag.substring(1);
 					obj.resetFlag(flags[flag]).success(function()
@@ -822,37 +809,20 @@ var commands = {
 			(
 				conn, objName, function(obj)
 				{
-					if (!obj[0])
-					{
-						controller.sendMessage(conn, strings.lockUnknown);
-					}
-					else
-					{
-						controller.findPotentialMUDObjects
-						(
-							conn, keyName, function(key)
+					controller.findPotentialMUDObjects
+					(
+						conn, keyName, function(key)
+						{
+							obj.keyId = key.id;
+							obj.save().success(function()
 							{
-								if (!key[0])
-								{
-									controller.sendMessage(conn, strings.keyUnknown);
-								}
-								else
-								{
-									obj = obj[0];
-									key = key[0];
-
-									obj.keyId = key.id;
-									obj.save().success(function()
-									{
-										controller.sendMessage(conn, strings.locked);
-									});
-								}
-							},
-							true, true
-						);
-					}
+								controller.sendMessage(conn, strings.locked);
+							});
+						},
+						true, true, undefined, strings.ambigSet, strings.keyUnknown
+					);
 				},
-				true, true
+				true, true, undefined, strings.ambigSet, strings.lockUnknown
 			);
 		}
 	}),
@@ -885,14 +855,7 @@ var commands = {
 	}),
 
 	// This changes your password
-	"@password" : CommandHandler.extend({
-		nargs: 1,
-		validate: function(conn, argsArr, cb) {
-			if (argsArr.length == 1)
-				cb(conn, argsArr);
-			else
-				controller.sendMessage(conn, strings.unknownCommand);
-		},
+	"@password" : PropertyHandler.extend({
 		perform: function(conn, argsArr) {
 			var player = controller.findActivePlayerByConnection(conn);
 
