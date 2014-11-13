@@ -489,7 +489,7 @@ var commands = {
 	}),
 	//Checkout player inventory
 	"inventory": CommandHandler.extend({
-		nargs: 1,
+		nargs: 0,
 		validate: function(conn, argsArr, cb) {
 			if (argsArr.length == 0)
 				cb(conn, argsArr);
@@ -849,7 +849,7 @@ var commands = {
 						controller.sendMessage(conn, strings.permissionDenied);
 						return;
 					}
-					
+
 					controller.findPotentialMUDObject
 					(
 						conn, keyName, function(key)
